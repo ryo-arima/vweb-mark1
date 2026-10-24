@@ -1,0 +1,40 @@
+services:
+  openresty:
+    build:
+      context: .
+      dockerfile: docker/openresty/Dockerfile
+    image: vweb/openresty:dev
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./etc/openresty/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+      - ./etc/openresty/oidc.lua:/etc/openresty/vweb_oidc.lua:ro
+      - ./private/pki:/etc/pki:ro
+    environment:
+      KEYCLOAK_BFF_CLIENT_SECRET: ${KEYCLOAK_BFF_CLIENT_SECRET:?KEYCLOAK_BFF_CLIENT_SECRET is required}
+      SESSION_ENCRYPTION_KEY: ${SESSION_ENCRYPTION_KEY:?SESSION_ENCRYPTION_KEY is required}
+      VWEB_BFF_DB_PASSWORD: ${VWEB_BFF_DB_PASSWORD:?VWEB_BFF_DB_PASSWORD is required}
+      VWEB_PUBLIC_URL: ${VWEB_PUBLIC_URL:?VWEB_PUBLIC_URL is required}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      service-a-front:
+        condition: service_healthy
+      service-a-back:
+        condition: service_healthy
+      service-b-front:
+        condition: service_healthy
+      service-b-back:
+        condition: service_healthy
+    networks:
+      - vweb-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1/healthz >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+

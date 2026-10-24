@@ -1,0 +1,47 @@
+services:
+  service-b-front:
+    image: vweb/service-b-front:dev
+    build:
+      context: ./service-b/front
+    expose:
+      - "80"
+    networks:
+      - vweb-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1/ >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
+  service-b-back:
+    image: vweb/service-b-back:dev
+    build:
+      context: ./service-b/back
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      SERVICE_NAME: service-b
+      PORT: "8000"
+      DATABASE_URL: postgres://service_b:${VWEB_SERVICE_DB_PASSWORD:?VWEB_SERVICE_DB_PASSWORD is required}@postgres:5432/vweb
+      KEYCLOAK_API_URL: https://keycloak:8443
+      KEYCLOAK_REALM: vweb
+      KEYCLOAK_API_CLIENT_ID: service-b-api
+      KEYCLOAK_API_CLIENT_SECRET: ${KEYCLOAK_SERVICE_B_CLIENT_SECRET:?KEYCLOAK_SERVICE_B_CLIENT_SECRET is required}
+      KEYCLOAK_CA_CERT: /pki/ca/root_ca.crt
+      KEYCLOAK_CLIENT_CERT: /pki/service-b/client.crt
+      KEYCLOAK_CLIENT_KEY: /pki/service-b/client.key
+    volumes:
+      - ./private/pki:/pki:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - vweb-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:8000/readyz >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s

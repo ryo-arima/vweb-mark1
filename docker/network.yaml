@@ -1,0 +1,6 @@
+services: {}
+
+networks:
+  vweb-network:
+    name: vweb-network
+    driver: bridge

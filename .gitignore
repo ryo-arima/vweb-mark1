@@ -1,0 +1,14 @@
+# mdBook and GitHub Pages generated output
+docs/book/
+site/
+
+# Local environment and generated secrets
+.env
+.env.*
+!.env.example
+private/
+
+# Front-end dependencies and build output
+node_modules/
+dist/
+

@@ -1,0 +1,7 @@
+# Enable authenticated SMTP submission for the local development mail UI.
+submission inet n       -       y       -       -       smtpd
+  -o syslog_name=postfix/submission
+  -o smtpd_tls_security_level=none
+  -o smtpd_tls_auth_only=no
+  -o smtpd_sasl_auth_enable=yes
+  -o milter_macro_daemon_name=ORIGINATING

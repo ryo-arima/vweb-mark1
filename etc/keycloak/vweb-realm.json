@@ -1,0 +1,207 @@
+{
+  "realm": "vweb",
+  "enabled": true,
+  "displayName": "vweb",
+  "sslRequired": "external",
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "verifyEmail": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "platform-admin",
+        "description": "Full administrative authority across all services"
+      }
+    ],
+    "client": {
+      "vweb-bff": [
+        {
+          "name": "service-a-admin",
+          "description": "Administration of service A"
+        },
+        {
+          "name": "service-b-admin",
+          "description": "Administration of service B"
+        },
+        {
+          "name": "group-admin",
+          "description": "Group membership and existing role assignment administration"
+        },
+        {
+          "name": "group-editor",
+          "description": "Resource operations allowed by group policies"
+        },
+        {
+          "name": "group-viewer",
+          "description": "Read operations allowed by group policies"
+        }
+      ]
+    }
+  },
+  "clients": [
+    {
+      "clientId": "vweb-bff",
+      "name": "vweb BFF",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "https://vweb.local/auth/callback"
+      ],
+      "webOrigins": [
+        "https://vweb.local"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "claim.name": "groups"
+          }
+        },
+        {
+          "name": "realm roles in ID token",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "client roles in ID token",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-client-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "claim.name": "resource_access.${client_id}.roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "name": "services",
+      "subGroups": [
+        {
+          "name": "service-a",
+          "subGroups": [
+            {
+              "name": "administrators",
+              "clientRoles": {
+                "vweb-bff": [
+                  "service-a-admin"
+                ]
+              }
+            },
+            {
+              "name": "groups",
+              "subGroups": [
+                {
+                  "name": "group-a",
+                  "subGroups": [
+                    {
+                      "name": "administrators",
+                      "clientRoles": {
+                        "vweb-bff": [
+                          "group-admin"
+                        ]
+                      }
+                    },
+                    {
+                      "name": "editors",
+                      "clientRoles": {
+                        "vweb-bff": [
+                          "group-editor"
+                        ]
+                      }
+                    },
+                    {
+                      "name": "viewers",
+                      "clientRoles": {
+                        "vweb-bff": [
+                          "group-viewer"
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "service-b",
+          "subGroups": [
+            {
+              "name": "administrators",
+              "clientRoles": {
+                "vweb-bff": [
+                  "service-b-admin"
+                ]
+              }
+            },
+            {
+              "name": "groups",
+              "subGroups": [
+                {
+                  "name": "group-b",
+                  "subGroups": [
+                    {
+                      "name": "administrators",
+                      "clientRoles": {
+                        "vweb-bff": [
+                          "group-admin"
+                        ]
+                      }
+                    },
+                    {
+                      "name": "editors",
+                      "clientRoles": {
+                        "vweb-bff": [
+                          "group-editor"
+                        ]
+                      }
+                    },
+                    {
+                      "name": "viewers",
+                      "clientRoles": {
+                        "vweb-bff": [
+                          "group-viewer"
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

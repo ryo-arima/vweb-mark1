@@ -1,0 +1,50 @@
+services:
+  mailserver:
+    image: ghcr.io/docker-mailserver/docker-mailserver:latest
+    hostname: mail.vweb.local
+    domainname: vweb.local
+    environment:
+      OVERRIDE_HOSTNAME: mail.vweb.local
+      DOMAINNAME: vweb.local
+      ONE_DIR: "1"
+      ACCOUNT_PROVISIONER: FILE
+      SSL_TYPE: ""
+      TLS_LEVEL: ""
+      ENABLE_AMAVIS: "0"
+      ENABLE_SPAMASSASSIN: "0"
+      ENABLE_CLAMAV: "0"
+      ENABLE_FAIL2BAN: "0"
+      ENABLE_POSTGREY: "0"
+      DMS_DEBUG: "1"
+      PERMIT_DOCKER: network
+      NETWORK_INTERFACE: eth0
+      SMTP_ONLY: "0"
+      ENABLE_POP3: "0"
+      ENABLE_SASLAUTHD: "0"
+      DOVECOT_INET_PROTOCOLS: ipv4
+      POSTFIX_MESSAGE_SIZE_LIMIT: "10485760"
+    cap_add:
+      - NET_ADMIN
+    depends_on:
+      dns:
+        condition: service_started
+    networks:
+      vweb-mail-network:
+        ipv4_address: 172.31.0.10
+    dns:
+      - 172.31.0.53
+    volumes:
+      - ./private/mailserver:/tmp/docker-mailserver
+      - ./scripts/data/mailserver/postfix-main.cf:/tmp/docker-mailserver/postfix-main.cf:ro
+      - ./scripts/data/mailserver/postfix-master.cf:/tmp/docker-mailserver/postfix-master.cf:ro
+      - ./scripts/data/mailserver/dovecot-quotas.cf:/tmp/docker-mailserver/dovecot-quotas.cf:ro
+      - mail-state:/var/mail-state
+    tmpfs:
+      - /var/mail
+      - /var/log/mail
+    restart: unless-stopped
+    stop_grace_period: 1m
+
+volumes:
+  mail-state:
+    name: vweb-mail-state

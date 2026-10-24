@@ -1,0 +1,36 @@
+services:
+  dns:
+    image: strm/dnsmasq:latest
+    platform: ${DOCKER_PLATFORM:-linux/amd64}
+    ports:
+      - "127.0.0.1:8053:8080"
+    environment:
+      HTTP_USER: admin
+      HTTP_PASS: ${VWEB_DNS_HTTP_PASSWORD:?VWEB_DNS_HTTP_PASSWORD is required}
+    cap_add:
+      - NET_ADMIN
+    command:
+      - --address=/vweb.local/172.31.0.10
+      - --address=/mail.vweb.local/172.31.0.10
+      - --address=/roundcube.vweb.local/172.31.0.11
+      - --mx-host=vweb.local,mail.vweb.local,10
+      - --txt-record=vweb.local,v=spf1 mx a ~all
+      - --txt-record=_dmarc.vweb.local,v=DMARC1; p=none; rua=mailto:dmarc@vweb.local
+      - --host-record=mail.vweb.local,172.31.0.10
+      - --host-record=roundcube.vweb.local,172.31.0.11
+      - --host-record=10.0.31.172.in-addr.arpa,mail.vweb.local
+      - --log-queries
+      - --no-resolv
+    networks:
+      vweb-mail-network:
+        ipv4_address: 172.31.0.53
+    restart: unless-stopped
+
+networks:
+  vweb-mail-network:
+    name: vweb-mail-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.0.0/24
+          gateway: 172.31.0.1

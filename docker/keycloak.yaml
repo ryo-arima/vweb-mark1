@@ -1,0 +1,42 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3
+    command: ["start", "--import-realm"]
+    ports:
+      - "127.0.0.1:9443:8443"
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${VWEB_KEYCLOAK_DB_PASSWORD:?VWEB_KEYCLOAK_DB_PASSWORD is required}
+      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:?KEYCLOAK_PUBLIC_URL is required}
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTP_ENABLED: "false"
+      KC_HTTP_MANAGEMENT_PORT: "9000"
+      KC_HTTPS_MANAGEMENT_CLIENT_AUTH: none
+      KC_HEALTH_ENABLED: "true"
+      KC_HTTPS_PORT: "8443"
+      KC_HTTPS_CERTIFICATE_FILE: /pki/keycloak/keycloak.crt
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /pki/keycloak/keycloak.key
+      KC_HTTPS_CLIENT_AUTH: required
+      KC_HTTPS_TRUST_STORE_FILE: /pki/keycloak/keycloak-truststore.p12
+      KC_HTTPS_TRUST_STORE_PASSWORD: ${KEYCLOAK_TRUSTSTORE_PASSWORD:?KEYCLOAK_TRUSTSTORE_PASSWORD is required}
+      KC_HTTPS_TRUST_STORE_TYPE: PKCS12
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:?KEYCLOAK_ADMIN is required}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD is required}
+    volumes:
+      - ./private/pki:/pki:ro
+      - ./etc/keycloak/vweb-realm.json:/opt/keycloak/data/import/vweb-realm.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - vweb-network
+      - vweb-mail-network
+    healthcheck:
+      test: ["CMD", "/usr/bin/bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+

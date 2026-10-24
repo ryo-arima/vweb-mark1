@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      VWEB_KEYCLOAK_DB_PASSWORD: ${VWEB_KEYCLOAK_DB_PASSWORD:?VWEB_KEYCLOAK_DB_PASSWORD is required}
+      VWEB_SERVICE_DB_PASSWORD: ${VWEB_SERVICE_DB_PASSWORD:?VWEB_SERVICE_DB_PASSWORD is required}
+      VWEB_BFF_DB_PASSWORD: ${VWEB_BFF_DB_PASSWORD:?VWEB_BFF_DB_PASSWORD is required}
+      VWEB_ROUNDCUBE_DB_PASSWORD: ${VWEB_ROUNDCUBE_DB_PASSWORD:?VWEB_ROUNDCUBE_DB_PASSWORD is required}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/data/postgres-init.sh:/docker-entrypoint-initdb.d/01-postgres-init.sh:ro
+      - ./scripts/data/sync-postgres-roles.sh:/scripts/sync-postgres-roles.sh:ro
+      - ./scripts/data/run-service-migrations.sh:/scripts/run-service-migrations.sh:ro
+      - ./scripts/data/roundcube-init.sh:/scripts/roundcube-init.sh:ro
+      - ./service-a/back/etc/migrations:/migrations/service-a:ro
+      - ./service-b/back/etc/migrations:/migrations/service-b:ro
+    networks:
+      - vweb-network
+      - vweb-mail-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+volumes:
+  postgres-data:
+    name: vweb-postgres-data

@@ -1,0 +1,26 @@
+services:
+  step-ca:
+    image: smallstep/step-ca:0.27.4
+    environment:
+      DOCKER_STEPCA_INIT_NAME: vweb Development CA
+      DOCKER_STEPCA_INIT_DNS_NAMES: step-ca,localhost
+      DOCKER_STEPCA_INIT_PROVISIONER_NAME: admin
+      DOCKER_STEPCA_INIT_PASSWORD: ${STEP_CA_INIT_PASSWORD:?STEP_CA_INIT_PASSWORD is required}
+    volumes:
+      - step-ca-data:/home/step
+      - ./private/pki:/pki
+      - ./scripts/pki/issue-certificates.sh:/scripts/issue-certificates.sh:ro
+    ports:
+      - "127.0.0.1:9000:9000"
+    networks:
+      - vweb-network
+    healthcheck:
+      test: ["CMD-SHELL", "step ca health --ca-url https://localhost:9000 --root /home/step/certs/root_ca.crt"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+volumes:
+  step-ca-data:
+    name: vweb-step-ca-data
