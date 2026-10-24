@@ -1,0 +1,13 @@
+[book]
+title = "vweb-mark1 Basic Design"
+authors = ["vweb-mark1 contributors"]
+language = "en"
+src = "src"
+
+[build]
+build-dir = "book"
+
+[output.html]
+git-repository-url = "https://github.com/ryo-arima/vweb-mark1"
+edit-url-template = "https://github.com/ryo-arima/vweb-mark1/edit/main/docs/{path}"
+
