@@ -202,8 +202,11 @@ artifact:
 - `/` provides links to both language versions and redirects to English.
 
 Pull requests build both books without deploying. Pushes to `main` and manual
-workflow runs deploy through the `github-pages` environment. The repository's
-Pages source must be set to **GitHub Actions** in the repository settings.
+workflow runs deploy through the `github-pages` environment. Before the first
+deployment, a repository administrator must set the repository's Pages source
+to **GitHub Actions** in Settings > Pages > Build and deployment. The default
+`GITHUB_TOKEN` cannot create the Pages site itself; this is a one-time
+repository setting.
 
 ## Verification expectations
 

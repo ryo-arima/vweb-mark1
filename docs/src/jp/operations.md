@@ -134,7 +134,7 @@ curl --cacert private/pki/ca/root_ca.crt \
 - `/jp/`は日本語版
 - `/`は両言語へのリンクを表示し、英語版へリダイレクトする
 
-Pull Requestでは両方のビルドだけを実行し、デプロイしない。`main`へのpushと手動実行では、`github-pages` environmentを通してデプロイする。リポジトリ設定のPagesのSourceは**GitHub Actions**に設定する。
+Pull Requestでは両方のビルドだけを実行し、デプロイしない。`main`へのpushと手動実行では、`github-pages` environmentを通してデプロイする。初回デプロイ前に、リポジトリ管理者がSettings > Pages > Build and deploymentのPages Sourceを**GitHub Actions**へ設定する必要がある。既定の`GITHUB_TOKEN`だけではPages site自体を作成できないため、この設定は一度だけ手動で行う。
 
 ## 検証方針
 

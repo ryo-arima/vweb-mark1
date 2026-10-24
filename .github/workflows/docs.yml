@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pages: write
 
     steps:
       - name: Checkout
@@ -42,6 +43,7 @@ jobs:
         run: cp docs/site-root/index.html site/index.html
 
       - name: Configure GitHub Pages
+        if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
